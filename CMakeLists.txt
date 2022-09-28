@@ -7,6 +7,11 @@ include(gtest.cmake)
 include(benchmark.cmake)
 
 add_executable(bench)
-target_sources(bench PRIVATE cache.cpp)
+target_sources(bench PRIVATE
+        cache.cpp
+        cache_big_object.cpp
+        branch.cpp
+        branch_frequent.cpp
+        )
 target_link_libraries(bench PRIVATE benchmark::benchmark_main)
 target_compile_options(bench PRIVATE -fno-tree-vectorize)

@@ -16,11 +16,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        include:
-          - os: macos-latest
-            libcxx: libc++
-          - os: ubuntu-latest
-            libcxx: libstdc++11
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2

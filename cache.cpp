@@ -1,28 +1,41 @@
 #include <benchmark/benchmark.h>
+#include "cache.h"
 
-constexpr int cache_line_size = 512;
-constexpr int cols = cache_line_size / sizeof(int);
-constexpr int cache_size = 4096 * 1024;
-constexpr int rows = cache_size / cache_line_size;
-int data[rows][cols];
-static bool initialized = false;
+constexpr int factor = 64;
+
+static inline unsigned calculate_column_size() {
+    return cache_size / cache_way / sizeof(int);
+}
+
+static inline unsigned calculate_row_size() {
+    return cache_way * factor;
+}
+
+static auto col_size = calculate_column_size();
+static auto row_size = calculate_row_size();
+
+std::vector<int> data;
 
 static void GenerateData(const benchmark::State &state) {
-    if (initialized)
+    if (!data.empty())
         return;
 
-    for (int r = 0; r < rows; ++r)
-        for (int c = 0; c < cols; ++c)
-            data[r][c] = rand();
-    initialized = true;
+    fetch_cache_config();
+    col_size = calculate_column_size();
+    row_size = calculate_row_size();
+
+    data.assign(row_size * col_size, 0);
+    for (int row = 0; row < row_size; ++row)
+        for (int col = 0; col < col_size; ++col)
+            data[row * col_size + col] = rand();
 }
 
 static void RowByRow(benchmark::State &state) {
     int max = 0;
     for (auto _: state) {
-        for (int r = 0; r < rows; ++r)
-            for (int c = 0; c < cols; ++c)
-                max = std::max(max, data[r][c]);
+        for (int row = 0; row < row_size; ++row)
+            for (int col = 0; col < col_size; ++col)
+                max = std::max(max, data[row * col_size + col]);
         benchmark::DoNotOptimize(max);
     }
 }
@@ -32,9 +45,9 @@ BENCHMARK(RowByRow)->Setup(GenerateData);
 static void ColByCol(benchmark::State &state) {
     int max = 0;
     for (auto _: state) {
-        for (int c = 0; c < cols; ++c)
-            for (int r = 0; r < rows; ++r)
-                max = std::max(max, data[r][c]);
+        for (int col = 0; col < col_size; ++col)
+            for (int row = 0; row < row_size; ++row)
+                max = std::max(max, data[row * col_size + col]);
         benchmark::DoNotOptimize(max);
     }
 }
