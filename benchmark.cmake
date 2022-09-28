@@ -1,0 +1,6 @@
+set(BENCHMARK_ENABLE_TESTING OFF)
+include(FetchContent)
+set(BENCHMARK_URL "https://github.com/google/benchmark/archive/refs/tags/v1.7.0.tar.gz" CACHE STRING "Google benchmark URL")
+set(BENCHMARK_URL_HASH "MD5=a259f985e7f8e4f5d2286a592eabd7e9" CACHE STRING "Google benchmark URL HASH")
+FetchContent_Declare(google_benchmark URL ${BENCHMARK_URL} URL_HASH ${BENCHMARK_URL_HASH})
+FetchContent_MakeAvailable(google_benchmark)
